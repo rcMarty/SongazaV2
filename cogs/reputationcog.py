@@ -19,6 +19,17 @@ class Reputation(commands.Cog):
 
         self.lock = threading.Lock()
 
+        # spam protection
+        self.time_window_milliseconds = 1000 * 60 * 60  # one hour
+        self.max_msg_per_window = 1
+        self.author_msg_times = defaultdict(list)
+        # Struct:
+        # {
+        #    "<author_id>": ["<msg_time>", "<msg_time>", ...],
+        #    "<author_id>": ["<msg_time>"],
+        # }
+
+        # once per time save
         x = datetime.today()
         y = x.replace(day=x.day, hour=1, minute=0, second=0, microsecond=0) + timedelta(days=1)
         delta_t = y - x
@@ -27,6 +38,27 @@ class Reputation(commands.Cog):
         t = Timer(secs, self.save)
         t.start()
 
+    async def spam_protection(self, ctx: commands.Context):
+
+        global author_msg_counts
+
+        author_id = ctx.author.id
+        curr_time = datetime.now().timestamp() * 1000  # current time
+
+        self.author_msg_times[author_id].append(curr_time)
+
+        expr_time = curr_time - self.time_window_milliseconds  # Find the beginning of our time window.
+
+        # remove old messages
+        expired_msgs = [msg_time for msg_time in self.author_msg_times[author_id] if msg_time < expr_time]
+        for msg_time in expired_msgs:
+            self.author_msg_times[author_id].remove(msg_time)
+
+        if len(self.author_msg_times[author_id]) > self.max_msg_per_window:
+            await ctx.send("only one rep per user per hour")
+            return True
+        return False
+
     @commands.Cog.listener()
     async def on_ready(self):
         self.load()
@@ -34,6 +66,10 @@ class Reputation(commands.Cog):
 
     @commands.hybrid_command(name="rep", description="Give reputation to a user")
     async def rep(self, ctx: commands.Context, direction: typing.Optional[Literal['++', '--']], user: str, notes: typing.Optional[str] = "Idk why just because"):
+
+        if await self.spam_protection(ctx):
+            return
+
         print("before user: ", user)
         print("direction: ", direction)
         userconverter = UserConverter()
@@ -47,7 +83,7 @@ class Reputation(commands.Cog):
             await ctx.send("Nemůžeš měnit reputaci sobě Pepego")
             return
 
-        today = datetime.date.today()
+        today = datetime.today()
 
         if direction == "++":
             self.reps[(user.id, ctx.guild.id)]["count"] += 1

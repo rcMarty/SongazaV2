@@ -4,26 +4,10 @@ from discord.ext import commands
 import configparser
 
 
-# from sqlalchemy.dialects.sqlite import aiosqlite
-
-
 def load_config(path: str):
     config = configparser.ConfigParser()
     config.read(path)
     return config
-
-
-# conn = None
-# def create_connection(db_file):
-#     """ create a database connection to a SQLite database """
-#     conn = None
-#     try:
-#         conn = aiosqlite.connect(db_file)
-#     except Exception as e:
-#         print(e)
-#     finally:
-#         if conn:
-#             conn.close()
 
 
 bot = commands.Bot(command_prefix=';', intents=discord.Intents.all())
