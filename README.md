@@ -15,12 +15,14 @@
     - [x] loading lists
         - downloading source url takes long time and it must be remade to async or something
     - [x] insert into position
+    - [ ] fix bugs with playing songs and suddenly skipping
+- [ ] reminder
+    - [ ] just remind me into dms and into channel where i wrote this command
 
 ## instalation
 
 - ffmpeg is required
-    - (idk where, my linux is blocking something from discord voice so im testing it on windows and i have next
-      to `main.py` ffmpeg.exe files )
+    - in the executable folder
 - rename `example-config.ini` to `config.ini` and write there your discord token
 - new enviroment and source it
 - install `requirements.txt`
