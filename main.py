@@ -10,7 +10,7 @@ def load_config(path: str):
     return config
 
 
-bot = commands.Bot(command_prefix=';', intents=discord.Intents.all())
+bot = commands.Bot(command_prefix=";", intents=discord.Intents.all())
 
 
 @bot.event
@@ -43,15 +43,20 @@ async def shutdown(ctx):
     await bot.close()
 
 
-async def load():
-    await bot.load_extension("cogs.reputationcog")
-    await bot.load_extension("cogs.musiccog")
+async def load(cogs: list):
+    for cog in cogs:
+        await bot.load_extension("cogs." + cog)
 
 
 async def main():
-    await load()
     config = load_config("config.ini")
-    await bot.start(config["DISCORD"]["DISCORD_TOKEN"])
+    bot.command_prefix = config["DISCORD"]["COMMAND_PREFIX"]
+    print(bot.command_prefix)
+    await load((config["COGS"]["COG"]).split(";"))
+    try:
+        await bot.start(config["DISCORD"]["DISCORD_TOKEN"])
+    except discord.LoginFailure:
+        print("something went wrong, do you have right discord token? ")
 
 
 if __name__ == "__main__":
